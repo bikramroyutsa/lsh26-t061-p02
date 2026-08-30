@@ -3,11 +3,13 @@
 import React, { useEffect, useState } from 'react';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { Calendar, RotateCcw, Activity } from 'lucide-react';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 export default function Header() {
   const { resetData } = usePharmacy();
   const [mounted, setMounted] = useState(false);
   const [dateStr, setDateStr] = useState('');
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -46,11 +48,7 @@ export default function Header() {
             </div>
 
             <button
-              onClick={() => {
-                if (window.confirm('Are you sure you want to reset the database to sample medicines?')) {
-                  resetData();
-                }
-              }}
+              onClick={() => setIsConfirmOpen(true)}
               className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-slate-600 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors cursor-pointer"
               title="Reset stock list to original 42 sample medicines"
             >
@@ -60,6 +58,19 @@ export default function Header() {
           </div>
         </div>
       </div>
+
+      <ConfirmationModal
+        isOpen={isConfirmOpen}
+        title="Reset Stock Data"
+        message="Are you sure you want to reset the database to the original 42 sample medicines? All your current active changes and returns will be overwritten."
+        confirmLabel="Reset Data"
+        variant="danger"
+        onConfirm={() => {
+          resetData();
+          setIsConfirmOpen(false);
+        }}
+        onCancel={() => setIsConfirmOpen(false)}
+      />
     </header>
   );
 }

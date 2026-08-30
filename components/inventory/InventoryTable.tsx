@@ -1,11 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Medicine } from '@/types/medicine';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { getDaysRemaining, formatLocalDate } from '@/lib/expiry';
 import { getExpiryCategory, getCategoryLabel, getMedicineValue } from '@/lib/calculations';
 import { Trash2 } from 'lucide-react';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 interface InventoryTableProps {
   medicines: Medicine[];
@@ -13,6 +14,7 @@ interface InventoryTableProps {
 
 export default function InventoryTable({ medicines }: InventoryTableProps) {
   const { returnMedicine } = usePharmacy();
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
 
   const formatBDT = (value: number) => {
     return `৳${value.toFixed(2)}`;
@@ -137,15 +139,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
                   {/* Action Return button */}
                   <td className="py-3.5 px-4 sm:px-6 text-center">
                     <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Are you sure you want to return ${m.name} (Batch: ${m.batch}) to the distributor? It will leave the active inventory.`
-                          )
-                        ) {
-                          returnMedicine(m.id);
-                        }
-                      }}
+                      onClick={() => setSelectedMedicine(m)}
                       className="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-100 rounded-lg transition-colors cursor-pointer"
                       title="Return Stock to Distributor"
                     >
@@ -159,6 +153,26 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Custom Confirmation Popup */}
+      <ConfirmationModal
+        isOpen={selectedMedicine !== null}
+        title="Confirm Stock Return"
+        message={
+          selectedMedicine
+            ? `Are you sure you want to return ${selectedMedicine.name} (Batch: ${selectedMedicine.batch}) to the distributor? It will leave the active inventory and dashboard risk counts.`
+            : ''
+        }
+        confirmLabel="Confirm Return"
+        variant="danger"
+        onConfirm={() => {
+          if (selectedMedicine) {
+            returnMedicine(selectedMedicine.id);
+            setSelectedMedicine(null);
+          }
+        }}
+        onCancel={() => setSelectedMedicine(null)}
+      />
     </div>
   );
 }
