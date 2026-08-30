@@ -48,9 +48,15 @@ export default function SellPage() {
   // Session Sales History
   const [recentInvoices, setRecentInvoices] = useState<SaleInvoice[]>([]);
 
-  // Filter available active stock (quantity > 0 and not returned)
+  // Filter available active stock (quantity > 0, not returned, and NOT expired)
   const availableMedicines = useMemo(() => {
-    const active = medicines.filter((m) => !m.returned && m.quantity > 0);
+    const active = medicines.filter((m) => {
+      if (m.returned || m.quantity <= 0) return false;
+      const expiryStr = getMedicineExpiry(m);
+      if (!expiryStr) return false; // no expiry date → treat as expired, block sale
+      const days = getDaysRemaining(expiryStr);
+      return days >= 0; // exclude expired (days < 0)
+    });
     if (!searchQuery.trim()) return active;
 
     const q = searchQuery.toLowerCase();
@@ -131,9 +137,16 @@ export default function SellPage() {
 
   const grandTotal = Math.max(0, subtotal - (discount || 0));
 
+  // Detect if any cart item is expired (safety guard)
+  const hasExpiredInCart = useMemo(() =>
+    cart.some((item) => getDaysRemaining(getMedicineExpiry(item.medicine)) < 0),
+    [cart]
+  );
+
   // Complete Sale
   const handleCompleteSale = async () => {
     if (cart.length === 0) return;
+    if (hasExpiredInCart) return; // block sale with expired items
 
     setIsSubmitting(true);
     try {
@@ -492,10 +505,18 @@ export default function SellPage() {
               </div>
             </div>
 
+            {/* Expired items warning */}
+            {hasExpiredInCart && (
+              <div className="flex items-start gap-2 p-3 rounded-xl bg-expired-bg border border-expired/30 text-expired text-xs font-medium">
+                <span className="mt-0.5 flex-shrink-0">⚠️</span>
+                <span>Your cart contains <strong>expired medicine(s)</strong>. Remove them before completing the sale.</span>
+              </div>
+            )}
+
             {/* Submit Action */}
             <button
               onClick={handleCompleteSale}
-              disabled={cart.length === 0 || isSubmitting}
+              disabled={cart.length === 0 || isSubmitting || hasExpiredInCart}
               className="w-full flex items-center justify-center gap-2 py-3 px-6 rounded-full bg-primary hover:bg-fg text-white font-medium text-sm shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isSubmitting ? (
