@@ -15,6 +15,9 @@ export default function GeminiSuggestion({ medicines }: GeminiSuggestionProps) {
   const expiredRisks = highestRisks.filter(item => item.category === 'expired');
   const atRiskRisks = highestRisks.filter(item => item.category === 'expiring30');
 
+  // Create a unique signature to prevent excessive API calls on every render
+  const risksSignature = highestRisks.map(r => `${r.medicine.id}-${r.medicine.quantity}-${r.daysRemaining}`).join('|');
+
   const [suggestion, setSuggestion] = useState<string>('');
   const [loadingSuggestion, setLoadingSuggestion] = useState<boolean>(false);
 
@@ -40,7 +43,7 @@ export default function GeminiSuggestion({ medicines }: GeminiSuggestionProps) {
     }, 1000);
     
     return () => clearTimeout(timeout);
-  }, [medicines]);
+  }, [risksSignature]);
 
   if (highestRisks.length === 0) return null;
 
