@@ -1,0 +1,10 @@
+{
+  "description": "Streamline pharmacy inventory management by tracking medicine expiry dates, enabling timely returns, and minimizing financial losses for pharmacists.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

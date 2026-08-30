@@ -2,34 +2,23 @@
 
 import React, { useState } from 'react';
 import { usePharmacy } from '@/context/PharmacyContext';
-import { Plus, X, AlertTriangle } from 'lucide-react';
+import { Plus, X } from 'lucide-react';
 
 export default function MedicineForm() {
   const { addMedicine } = usePharmacy();
   const [isOpen, setIsOpen] = useState(false);
 
-  // Form Fields
+  // Form state
   const [name, setName] = useState('');
   const [company, setCompany] = useState('');
   const [batch, setBatch] = useState('');
   const [quantity, setQuantity] = useState('');
   const [unitPriceBDT, setUnitPriceBDT] = useState('');
   const [expiryDate, setExpiryDate] = useState('');
-
-  // Validation Errors
   const [errors, setErrors] = useState<Record<string, string>>({});
-
-  const handleOpen = () => {
-    setIsOpen(true);
-    setErrors({});
-  };
 
   const handleClose = () => {
     setIsOpen(false);
-    resetForm();
-  };
-
-  const resetForm = () => {
     setName('');
     setCompany('');
     setBatch('');
@@ -39,39 +28,25 @@ export default function MedicineForm() {
     setErrors({});
   };
 
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-
-    if (!name.trim()) newErrors.name = 'Medicine name is required';
-    if (!company.trim()) newErrors.company = 'Company name is required';
-    if (!batch.trim()) newErrors.batch = 'Batch number is required';
-
-    const qtyNum = parseInt(quantity, 10);
-    if (!quantity) {
-      newErrors.quantity = 'Quantity is required';
-    } else if (isNaN(qtyNum) || qtyNum <= 0) {
-      newErrors.quantity = 'Quantity must be greater than 0';
-    }
-
-    const priceNum = parseFloat(unitPriceBDT);
-    if (!unitPriceBDT) {
-      newErrors.unitPriceBDT = 'Unit price is required';
-    } else if (isNaN(priceNum) || priceNum < 0) {
-      newErrors.unitPriceBDT = 'Unit price must be 0 or greater';
-    }
-
-    if (!expiryDate) {
-      newErrors.expiryDate = 'Expiry date is required';
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  const validate = (): boolean => {
+    const e: Record<string, string> = {};
+    if (!name.trim()) e.name = 'Required';
+    if (!company.trim()) e.company = 'Required';
+    if (!batch.trim()) e.batch = 'Required';
+    const qty = parseInt(quantity, 10);
+    if (!quantity) e.quantity = 'Required';
+    else if (isNaN(qty) || qty <= 0) e.quantity = 'Must be > 0';
+    const price = parseFloat(unitPriceBDT);
+    if (!unitPriceBDT) e.unitPriceBDT = 'Required';
+    else if (isNaN(price) || price < 0) e.unitPriceBDT = 'Must be ≥ 0';
+    if (!expiryDate) e.expiryDate = 'Required';
+    setErrors(e);
+    return Object.keys(e).length === 0;
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
     addMedicine({
       name: name.trim(),
       company: company.trim(),
@@ -82,42 +57,56 @@ export default function MedicineForm() {
       expiryDate,
       expiry: expiryDate,
     });
-
     handleClose();
   };
 
+  // Underline input: sage-green focus border, no heavy box
+  const inputClass = (hasError?: boolean) =>
+    `w-full bg-transparent border-b pb-2 text-sm text-fg placeholder-muted/60 outline-none transition-colors duration-300 font-sans ${
+      hasError
+        ? 'border-expired'
+        : 'border-border focus:border-primary'
+    }`;
+
   return (
     <>
-      {/* Trigger Button */}
+      {/* ── Trigger ──────────────────────────────────────────────────── */}
       <button
-        onClick={handleOpen}
-        className="flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold text-sm rounded-lg shadow-sm hover:shadow-md transition-all cursor-pointer"
+        onClick={() => setIsOpen(true)}
+        className="flex items-center gap-2 px-5 py-2.5 bg-fg hover:bg-interactive text-white text-sm font-medium rounded-full transition-colors duration-300 cursor-pointer shadow-sm"
       >
-        <Plus className="h-4.5 w-4.5" />
-        <span>Add Medicine</span>
+        <Plus className="w-4 h-4" strokeWidth={1.5} />
+        Add Medicine
       </button>
 
-      {/* Modal Backdrop */}
+      {/* ── Modal backdrop ────────────────────────────────────────────── */}
       {isOpen && (
-        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center z-50 p-4 animate-fadeIn">
-          {/* Modal Container */}
-          <div className="bg-white rounded-2xl max-w-md w-full shadow-xl border border-slate-200 overflow-hidden flex flex-col">
-            {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100">
-              <h3 className="text-lg font-bold text-slate-800">Add New Medicine</h3>
+        <div
+          className="fixed inset-0 bg-fg/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-up"
+          onClick={(e) => e.target === e.currentTarget && handleClose()}
+        >
+          <div className="bg-bg rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-7 py-5 border-b border-border">
+              <h3 className="font-serif italic text-xl text-fg">
+                Add New Medicine
+              </h3>
               <button
                 onClick={handleClose}
-                className="text-slate-400 hover:text-slate-600 p-1 rounded-lg hover:bg-slate-100 transition-colors"
+                className="p-1.5 rounded-full hover:bg-border text-muted hover:text-fg transition-all duration-200 cursor-pointer"
               >
-                <X className="h-5 w-5" />
+                <X className="w-4 h-4" strokeWidth={1.5} />
               </button>
             </div>
 
-            {/* Modal Body / Form */}
-            <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto max-h-[75vh]">
+            {/* Form */}
+            <form
+              onSubmit={handleSubmit}
+              className="px-7 py-6 space-y-6 overflow-y-auto max-h-[70vh]"
+            >
               {/* Medicine Name */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-[10px] font-medium uppercase tracking-widest text-primary mb-2">
                   Medicine Name *
                 </label>
                 <input
@@ -125,17 +114,17 @@ export default function MedicineForm() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="e.g. Napa Extend"
-                  className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                    errors.name ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
-                  }`}
+                  className={inputClass(!!errors.name)}
                 />
-                {errors.name && <p className="text-rose-500 text-xs mt-1 font-medium">{errors.name}</p>}
+                {errors.name && (
+                  <p className="text-expired text-xs mt-1">{errors.name}</p>
+                )}
               </div>
 
-              {/* Company & Batch Row */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Company + Batch */}
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  <label className="block text-[10px] font-medium uppercase tracking-widest text-primary mb-2">
                     Company *
                   </label>
                   <input
@@ -143,38 +132,33 @@ export default function MedicineForm() {
                     value={company}
                     onChange={(e) => setCompany(e.target.value)}
                     placeholder="e.g. Beximco"
-                    className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                      errors.company ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
-                    }`}
+                    className={inputClass(!!errors.company)}
                   />
                   {errors.company && (
-                    <p className="text-rose-500 text-xs mt-1 font-medium">{errors.company}</p>
+                    <p className="text-expired text-xs mt-1">{errors.company}</p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-                    Batch Number *
+                  <label className="block text-[10px] font-medium uppercase tracking-widest text-primary mb-2">
+                    Batch No. *
                   </label>
                   <input
                     type="text"
                     value={batch}
                     onChange={(e) => setBatch(e.target.value)}
                     placeholder="e.g. NP-2401"
-                    className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                      errors.batch ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
-                    }`}
+                    className={`${inputClass(!!errors.batch)} font-mono`}
                   />
                   {errors.batch && (
-                    <p className="text-rose-500 text-xs mt-1 font-medium">{errors.batch}</p>
+                    <p className="text-expired text-xs mt-1">{errors.batch}</p>
                   )}
                 </div>
               </div>
 
-              {/* Qty & Unit Price Row */}
-              <div className="grid grid-cols-2 gap-4">
+              {/* Qty + Unit Price */}
+              <div className="grid grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  <label className="block text-[10px] font-medium uppercase tracking-widest text-primary mb-2">
                     Quantity *
                   </label>
                   <input
@@ -183,17 +167,14 @@ export default function MedicineForm() {
                     value={quantity}
                     onChange={(e) => setQuantity(e.target.value)}
                     placeholder="e.g. 150"
-                    className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                      errors.quantity ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
-                    }`}
+                    className={`${inputClass(!!errors.quantity)} font-mono`}
                   />
                   {errors.quantity && (
-                    <p className="text-rose-500 text-xs mt-1 font-medium">{errors.quantity}</p>
+                    <p className="text-expired text-xs mt-1">{errors.quantity}</p>
                   )}
                 </div>
-
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                  <label className="block text-[10px] font-medium uppercase tracking-widest text-primary mb-2">
                     Unit Price (BDT) *
                   </label>
                   <input
@@ -203,46 +184,44 @@ export default function MedicineForm() {
                     value={unitPriceBDT}
                     onChange={(e) => setUnitPriceBDT(e.target.value)}
                     placeholder="e.g. 2.20"
-                    className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                      errors.unitPriceBDT ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
-                    }`}
+                    className={`${inputClass(!!errors.unitPriceBDT)} font-mono`}
                   />
                   {errors.unitPriceBDT && (
-                    <p className="text-rose-500 text-xs mt-1 font-medium">{errors.unitPriceBDT}</p>
+                    <p className="text-expired text-xs mt-1">
+                      {errors.unitPriceBDT}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Expiry Date */}
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
+                <label className="block text-[10px] font-medium uppercase tracking-widest text-primary mb-2">
                   Expiry Date *
                 </label>
                 <input
                   type="date"
                   value={expiryDate}
                   onChange={(e) => setExpiryDate(e.target.value)}
-                  className={`block w-full px-3 py-2 bg-slate-50 border rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${
-                    errors.expiryDate ? 'border-rose-300 bg-rose-50/20' : 'border-slate-200'
-                  }`}
+                  className={`${inputClass(!!errors.expiryDate)} font-mono`}
                 />
                 {errors.expiryDate && (
-                  <p className="text-rose-500 text-xs mt-1 font-medium">{errors.expiryDate}</p>
+                  <p className="text-expired text-xs mt-1">{errors.expiryDate}</p>
                 )}
               </div>
 
-              {/* Form Actions */}
-              <div className="flex gap-3 justify-end pt-4 border-t border-slate-100 mt-6">
+              {/* Actions */}
+              <div className="flex gap-3 pt-2 border-t border-border mt-2">
                 <button
                   type="button"
                   onClick={handleClose}
-                  className="px-4 py-2 border border-slate-200 text-slate-600 font-semibold text-sm rounded-lg hover:bg-slate-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2.5 border border-border text-muted text-sm font-medium rounded-full hover:bg-border/50 transition-colors duration-300 cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-lg shadow-sm transition-colors cursor-pointer"
+                  className="flex-[2] py-2.5 bg-fg hover:bg-interactive text-white text-sm font-medium rounded-full transition-colors duration-300 cursor-pointer"
                 >
                   Save Medicine
                 </button>

@@ -10,6 +10,7 @@ interface PharmacyContextType {
   medicines: Medicine[];
   addMedicine: (medicine: Omit<Medicine, 'id' | 'returned'>) => Promise<void>;
   returnMedicine: (id: string) => Promise<void>;
+  unreturnMedicine: (id: string) => Promise<void>;
   resetData: () => Promise<void>;
   loading: boolean;
 }
@@ -133,6 +134,31 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const unreturnMedicine = async (id: string) => {
+    if (!profile || !profile.pharmacy_id) return;
+
+    try {
+      const { error } = await supabase
+        .from('medicines')
+        .update({
+          returned: false,
+          returned_date: null,
+        })
+        .eq('id', id)
+        .eq('pharmacy_id', profile.pharmacy_id);
+
+      if (error) throw error;
+
+      // Update client-side state
+      setMedicines((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, returned: false, returnedDate: undefined } : m))
+      );
+    } catch (e) {
+      console.error('Error undoing returned medicine in Supabase:', e);
+      alert('Failed to undo return.');
+    }
+  };
+
   const resetData = async () => {
     if (!profile || !profile.pharmacy_id) return;
 
@@ -183,6 +209,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         medicines,
         addMedicine,
         returnMedicine,
+        unreturnMedicine,
         resetData,
         loading,
       }}
