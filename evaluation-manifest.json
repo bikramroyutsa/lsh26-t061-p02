@@ -1,0 +1,103 @@
+{
+  "release_version": "2.2",
+  "team_id": "LSH26-T061",
+  "problem_id": "P02",
+  "repository_name": "lsh26-t061-p02",
+  "live_url": "https://lsh26-t061-p02.appwrite.network",
+  "demo_video_url_optional": "",
+  "event_start_code": "LSH26-8490-C900",
+  "repository_created_before_release": false,
+  "pre_event_materials": [],
+  "sample_data": {
+    "loads_published_fixture": true,
+    "method": "seeded on start | typed entry",
+    "reset_instructions": "Click 'Reset & Seed Demo Data' or 'Empty Inventory' in the inventory view to restore or clear the demo medicine inventory."
+  },
+  "problem_solving_method": "Architected a multi-workspace pharmacy inventory management system using Next.js App Router and Supabase with strict row-level security. Implemented real-time expiry categorization (<0d, <=30d, 31-90d, >90d), capital risk valuation, 28-day weekly interval loss projection, POS invoice generation with safe non-expired stock filtering, and seamless return/recall workflows.",
+  "requirements": {
+    "R1": {
+      "status": "complete",
+      "evidence": "app/inventory/page.tsx, components/inventory/InventoryTable.tsx, components/inventory/MedicineForm.tsx"
+    },
+    "R2": {
+      "status": "complete",
+      "evidence": "app/page.tsx, components/dashboard/SummaryCards.tsx, components/dashboard/ExpiryChart.tsx, lib/calculations.ts"
+    },
+    "R3": {
+      "status": "complete",
+      "evidence": "app/expiry-loss/page.tsx, components/dashboard/FinancialRisk.tsx, lib/calculations.ts"
+    },
+    "R4": {
+      "status": "complete",
+      "evidence": "app/sell/page.tsx, components/sell/InvoiceModal.tsx, app/returned/page.tsx, components/returned/ReturnedTable.tsx"
+    }
+  },
+  "team_members": [
+    {
+      "registered_name": "Bikram Roy Utsa",
+      "github_username": "bikramroyutsa",
+      "major_contribution": "Scaffolded application architecture, built multi-tenant workspace isolation with Supabase RLS policies, data calculations aligning with test fixtures, and CSV export functionality.",
+      "evidence_paths_or_commits": [
+        "app/page.tsx",
+        "app/settings/page.tsx",
+        "context/PharmacyContext.tsx",
+        "supabase/migrations/20260830000001_multi_tenant.sql",
+        "lib/calculations.ts",
+        "components/inventory/InventoryTable.tsx"
+      ]
+    },
+    {
+      "registered_name": "Saeed Ahmed Mahin",
+      "github_username": "SaeedAhmedMahin",
+      "major_contribution": "Built POS sell workflow with invoice generation, stock decrementing, safe expiry validation, and 4-week interval expiry loss breakdown calculation engine.",
+      "evidence_paths_or_commits": [
+        "app/sell/page.tsx",
+        "app/expiry-loss/page.tsx",
+        "components/sell/InvoiceModal.tsx",
+        "lib/calculations.ts"
+      ]
+    },
+    {
+      "registered_name": "Rakinuzzaman",
+      "github_username": "rakinthegreat",
+      "major_contribution": "Designed and implemented botanical clay-card UI system, animated Landing page, Top/Bottom navigation, returned stock inventory management, and chart visualizations.",
+      "evidence_paths_or_commits": [
+        "app/globals.css",
+        "components/landing/LandingPage.tsx",
+        "components/layout/Header.tsx",
+        "components/layout/BottomNav.tsx",
+        "components/returned/ReturnedTable.tsx",
+        "components/dashboard/ExpiryChart.tsx"
+      ]
+    }
+  ],
+  "major_design_decisions": [
+    "Adopted Supabase row-level security (RLS) and multi-tenant workspace architecture to isolate pharmacy branch data safely.",
+    "Enforced strict expiry validation in POS/sell screen to prevent accidental sale of expired pharmaceuticals.",
+    "Implemented soft-removal return management to retain historical audit trail for supplier credit and recalls.",
+    "Created custom botanical clay-card design system using semantic CSS variables for optimal readability and clinical aesthetics."
+  ],
+  "known_limitations": [
+    "Barcode hardware scanner integration currently relies on manual batch and text entry.",
+    "SMS/Email notifications for near-expiry stock require third-party gateway webhook configuration."
+  ],
+  "ai_tools_used": [
+    {
+      "tool": "Gemini 3.7 Flash / 3.6 / 3.5 Flash",
+      "used_for": "Code generation, boilerplate scaffolding, UI component structuring, and refactoring",
+      "how_output_was_verified": "Manual code review, local testing in browser, unit verification against test cases"
+    },
+    {
+      "tool": "Gemini 3.1 Pro / Flash",
+      "used_for": "Formula derivation, OCR integration, and algorithmic calculation logic",
+      "how_output_was_verified": "Validated mathematical output against manual calculation and benchmark fixtures"
+    },
+    {
+      "tool": "Claude Sonnet 4.6",
+      "used_for": "Architecture planning, design system tokens, documentation generation, and bug fixing",
+      "how_output_was_verified": "TypeScript type-checking, linter validation, and manual runtime testing"
+    }
+  ],
+  "licenses_file": "LICENSES.md",
+  "declaration": "The information above is complete and truthful to the best of team_zurich's knowledge."
+}
