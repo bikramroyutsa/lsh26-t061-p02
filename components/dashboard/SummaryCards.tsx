@@ -1,117 +1,141 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { DashboardStats } from '@/lib/calculations';
 import { AlertCircle, AlertTriangle, Clock, CheckCircle } from 'lucide-react';
 
 interface SummaryCardsProps {
   stats: DashboardStats;
+  totalActive: number;
 }
 
-export default function SummaryCards({ stats }: SummaryCardsProps) {
-  const formatBDT = (value: number) => {
-    return `৳ ${Math.round(value).toLocaleString('en-US')}`;
-  };
+const CARDS = [
+  {
+    title: 'Expired',
+    subtitle: 'Past expiry date',
+    key: 'expired' as const,
+    icon: AlertCircle,
+    accentColor: 'var(--expired-color)',
+    textColor: 'var(--expired-color)',
+    bg: 'var(--expired-bg)',
+    borderColor: 'var(--expired-border)',
+    href: '/inventory?status=expired',
+  },
+  {
+    title: 'Expiring ≤30 Days',
+    subtitle: '0 to 30 days remaining',
+    key: 'expiring30' as const,
+    icon: AlertTriangle,
+    accentColor: 'var(--warn-color)',
+    textColor: 'var(--warn-color)',
+    bg: 'var(--warn-bg)',
+    borderColor: 'var(--warn-border)',
+    href: '/inventory?status=expiring30',
+  },
+  {
+    title: 'Watch 31–90 Days',
+    subtitle: '31 to 90 days remaining',
+    key: 'expiring90' as const,
+    icon: Clock,
+    accentColor: 'var(--watch-color)',
+    textColor: 'var(--watch-color)',
+    bg: 'var(--watch-bg)',
+    borderColor: 'var(--watch-border)',
+    href: '/inventory?status=expiring90',
+  },
+  {
+    title: 'Safe',
+    subtitle: 'More than 90 days',
+    key: 'safe' as const,
+    icon: CheckCircle,
+    accentColor: 'var(--safe-color)',
+    textColor: 'var(--safe-color)',
+    bg: 'var(--safe-bg)',
+    borderColor: 'var(--safe-border)',
+    href: '/inventory?status=safe',
+  },
+];
 
-  const cards = [
-    {
-      title: 'Expired',
-      subtitle: 'Expiry date is in the past',
-      count: stats.expired.count,
-      quantity: stats.expired.totalQuantity,
-      value: stats.expired.totalValue,
-      icon: AlertCircle,
-      colors: {
-        bg: 'bg-rose-50',
-        border: 'border-rose-200',
-        text: 'text-rose-700',
-        valueText: 'text-rose-800',
-        iconBg: 'bg-rose-100',
-        iconText: 'text-rose-600',
-      },
-    },
-    {
-      title: 'Expiring ≤30 Days',
-      subtitle: '0 to 30 days remaining',
-      count: stats.expiring30.count,
-      quantity: stats.expiring30.totalQuantity,
-      value: stats.expiring30.totalValue,
-      icon: AlertTriangle,
-      colors: {
-        bg: 'bg-amber-50',
-        border: 'border-amber-200',
-        text: 'text-amber-700',
-        valueText: 'text-amber-800',
-        iconBg: 'bg-amber-100',
-        iconText: 'text-amber-600',
-      },
-    },
-    {
-      title: 'Expiring 31–90 Days',
-      subtitle: '31 to 90 days remaining',
-      count: stats.expiring90.count,
-      quantity: stats.expiring90.totalQuantity,
-      value: stats.expiring90.totalValue,
-      icon: Clock,
-      colors: {
-        bg: 'bg-sky-50',
-        border: 'border-sky-200',
-        text: 'text-sky-700',
-        valueText: 'text-sky-800',
-        iconBg: 'bg-sky-100',
-        iconText: 'text-sky-600',
-      },
-    },
-    {
-      title: 'Safe',
-      subtitle: 'More than 90 days remaining',
-      count: stats.safe.count,
-      quantity: stats.safe.totalQuantity,
-      value: stats.safe.totalValue,
-      icon: CheckCircle,
-      colors: {
-        bg: 'bg-emerald-50',
-        border: 'border-emerald-200',
-        text: 'text-emerald-700',
-        valueText: 'text-emerald-800',
-        iconBg: 'bg-emerald-100',
-        iconText: 'text-emerald-600',
-      },
-    },
-  ];
+export default function SummaryCards({ stats, totalActive }: SummaryCardsProps) {
+  const formatBDT = (value: number) =>
+    `৳ ${Math.round(value).toLocaleString('en-US')}`;
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-      {cards.map((card) => {
+    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+      {CARDS.map((card) => {
         const Icon = card.icon;
-        const c = card.colors;
+        const data = stats[card.key];
+        const pct =
+          totalActive > 0
+            ? Math.min(100, (data.count / totalActive) * 100)
+            : 0;
 
         return (
-          <div
-            key={card.title}
-            className={`flex flex-col justify-between p-5 rounded-2xl border ${c.bg} ${c.border} transition-all duration-200 hover:shadow-md`}
+          <Link
+            key={card.key}
+            href={card.href}
+            className="clay-card clay-card-lift block p-5 md:p-6 group"
           >
-            <div className="flex items-start justify-between">
+            {/* Top row: label + icon */}
+            <div className="flex items-start justify-between mb-5">
               <div>
-                <h3 className={`font-bold text-base ${c.text}`}>{card.title}</h3>
-                <p className="text-xs text-slate-500 mt-0.5">{card.subtitle}</p>
+                <p
+                  className="text-[10px] font-medium uppercase tracking-widest"
+                  style={{ color: card.textColor }}
+                >
+                  {card.title}
+                </p>
+                <p className="text-[11px] text-muted mt-0.5 leading-tight">
+                  {card.subtitle}
+                </p>
               </div>
-              <div className={`p-2 rounded-xl ${c.iconBg}`}>
-                <Icon className={`h-5 w-5 ${c.iconText}`} />
+              <div
+                className="p-1.5 rounded-full flex-shrink-0"
+                style={{ backgroundColor: card.bg }}
+              >
+                <Icon
+                  className="w-4 h-4"
+                  style={{ color: card.accentColor }}
+                  strokeWidth={1.5}
+                />
               </div>
             </div>
 
-            <div className="mt-6 flex flex-col gap-1">
-              <span className={`text-2xl font-extrabold tracking-tight ${c.valueText}`}>
-                {formatBDT(card.value)}
-              </span>
-              <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 mt-1">
-                <span>{card.count} Medicines</span>
-                <span>•</span>
-                <span>{card.quantity.toLocaleString('en-US')} units</span>
-              </div>
+            {/* Big count */}
+            <div
+              className="font-serif text-5xl md:text-6xl font-bold leading-none mb-1"
+              style={{ color: card.accentColor }}
+            >
+              {data.count}
             </div>
-          </div>
+
+            {/* Value */}
+            <div
+              className="font-mono text-sm font-medium mb-4"
+              style={{ color: card.textColor }}
+            >
+              {formatBDT(data.totalValue)}
+            </div>
+
+            {/* Progress bar */}
+            <div
+              className="h-[3px] rounded-full"
+              style={{ backgroundColor: card.borderColor }}
+            >
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${pct}%`,
+                  backgroundColor: card.accentColor,
+                }}
+              />
+            </div>
+            <p className="font-mono text-[10px] text-muted mt-1.5">
+              {data.totalQuantity.toLocaleString('en-US')} units &middot;{' '}
+              {pct.toFixed(0)}% of active stock
+            </p>
+          </Link>
         );
       })}
     </div>

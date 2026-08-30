@@ -10,27 +10,26 @@ export default function ReturnedPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] gap-2">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-        <span className="text-slate-500 font-medium text-sm">Loading return records...</span>
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" strokeWidth={1.5} />
+        <span className="font-sans text-sm text-muted">Loading return records…</span>
       </div>
     );
   }
 
-  // Filter medicines that are returned
   const returnedMedicines = medicines.filter((m) => m.returned);
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* Header section with page description */}
+    <div className="space-y-8 animate-fade-up">
       <div>
-        <h2 className="text-lg font-bold text-slate-700 tracking-tight">Returned to Distributor</h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-          Archive list of expired or near-expiry medicine stock returned to distributors for refund or credit.
+        <h2 className="font-serif italic text-3xl md:text-4xl text-fg tracking-tight">
+          Returned
+        </h2>
+        <p className="text-sm text-muted mt-1">
+          Archive of expired or near-expiry stock returned to distributors for refund or credit.
         </p>
       </div>
 
-      {/* Returned Table */}
       <ReturnedTable medicines={returnedMedicines} />
     </div>
   );

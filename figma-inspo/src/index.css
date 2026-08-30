@@ -1,0 +1,95 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+@import 'tailwindcss';
+
+html,
+body,
+#root {
+  height: 100%;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+@theme {
+  --font-sans: 'Plus Jakarta Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+
+* {
+  scrollbar-width: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+*:hover {
+  scrollbar-width: thin;
+}
+*:hover::-webkit-scrollbar {
+  display: block;
+  width: 4px;
+  height: 4px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.15);
+  border-radius: 2px;
+}
+
+.clay-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 2px 0 rgba(92,79,229,0.10), 0 8px 28px rgba(26,19,64,0.08);
+  transition: box-shadow 0.18s ease, transform 0.18s ease;
+}
+.clay-card:hover {
+  box-shadow: 0 3px 0 rgba(92,79,229,0.14), 0 14px 36px rgba(26,19,64,0.11);
+  transform: translateY(-1px);
+}
+.clay-card-sm {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 0 rgba(92,79,229,0.08), 0 4px 14px rgba(26,19,64,0.06);
+  transition: box-shadow 0.18s ease;
+}
+
+.status-expired {
+  background: #FFF0F0;
+  border-left: 4px solid #F43F5E;
+}
+.status-soon {
+  background: #FFF6EE;
+  border-left: 4px solid #F97316;
+}
+.status-watch {
+  background: #FFFBE8;
+  border-left: 4px solid #EAB308;
+}
+.status-safe {
+  background: #F0FDF4;
+  border-left: 4px solid #22C55E;
+}
+.status-returned {
+  background: #F5F3FF;
+  border-left: 4px solid #8B5CF6;
+}
+
+@keyframes slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-in {
+  animation: slide-in 0.25s ease forwards;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.pulse-dot {
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+@keyframes scroll-x {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.scroll-x {
+  animation: scroll-x 28s linear infinite;
+}

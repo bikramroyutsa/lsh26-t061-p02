@@ -1,60 +1,90 @@
 'use client';
 
 import React from 'react';
-import { Search, Filter } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 
 interface SearchFilterProps {
   searchQuery: string;
   onSearchChange: (value: string) => void;
   statusFilter: string;
   onStatusChange: (value: string) => void;
+  counts: Record<string, number>;
 }
+
+const FILTER_TABS = [
+  { key: 'all',        label: 'All',          activeColor: 'var(--fg)' },
+  { key: 'expired',    label: 'Expired',      activeColor: 'var(--expired-color)' },
+  { key: 'expiring30', label: '≤30 Days',     activeColor: 'var(--warn-color)' },
+  { key: 'expiring90', label: '31–90 Days',   activeColor: 'var(--watch-color)' },
+  { key: 'safe',       label: 'Safe',         activeColor: 'var(--safe-color)' },
+];
 
 export default function SearchFilter({
   searchQuery,
   onSearchChange,
   statusFilter,
   onStatusChange,
+  counts,
 }: SearchFilterProps) {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm w-full">
-      {/* Search Input */}
-      <div className="relative flex-1">
-        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <Search className="h-4.5 w-4.5 text-slate-400" />
+    <div className="space-y-4">
+      {/* ── Search ────────────────────────────────────────────────────── */}
+      <div className="relative">
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 pointer-events-none">
+          <Search className="w-4 h-4 text-primary" strokeWidth={1.5} />
         </div>
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
-          placeholder="Search medicine name, manufacturer, or batch number..."
-          className="block w-full pl-10 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+          placeholder="Search by name, manufacturer, or batch…"
+          className="w-full pl-11 pr-10 py-3 bg-white border border-border rounded-2xl text-sm text-fg placeholder-muted focus:outline-none focus:border-primary transition-colors duration-300 font-sans"
         />
+        {searchQuery && (
+          <button
+            onClick={() => onSearchChange('')}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-fg transition-colors cursor-pointer"
+            aria-label="Clear search"
+          >
+            <X className="w-3.5 h-3.5" strokeWidth={1.5} />
+          </button>
+        )}
       </div>
 
-      {/* Status Filter Dropdown */}
-      <div className="flex items-center gap-2 min-w-[200px]">
-        <div className="bg-slate-100 p-2 rounded-lg text-slate-500">
-          <Filter className="h-4 w-4" />
-        </div>
-        <div className="relative flex-1">
-          <select
-            value={statusFilter}
-            onChange={(e) => onStatusChange(e.target.value)}
-            className="block w-full py-2 pl-3 pr-8 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors appearance-none cursor-pointer font-medium"
-          >
-            <option value="all">All Expiry Statuses</option>
-            <option value="expired">Expired</option>
-            <option value="expiring30">Expiring ≤30 Days</option>
-            <option value="expiring90">Expiring 31–90 Days</option>
-            <option value="safe">Safe</option>
-          </select>
-          <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
-            <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-              <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" />
-            </svg>
-          </div>
-        </div>
+      {/* ── Filter chips ──────────────────────────────────────────────── */}
+      <div className="flex flex-wrap gap-2">
+        {FILTER_TABS.map((tab) => {
+          const isActive = statusFilter === tab.key;
+          const count = counts[tab.key] ?? 0;
+
+          return (
+            <button
+              key={tab.key}
+              onClick={() => onStatusChange(tab.key)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-medium transition-all duration-300 cursor-pointer border ${
+                isActive
+                  ? 'text-white border-transparent'
+                  : 'bg-white text-muted border-border hover:border-primary hover:text-fg'
+              }`}
+              style={
+                isActive
+                  ? { backgroundColor: tab.activeColor, borderColor: tab.activeColor }
+                  : undefined
+              }
+            >
+              <span>{tab.label}</span>
+              <span
+                className={`font-mono text-[10px] px-1.5 py-0.5 rounded-full transition-all duration-300 ${
+                  isActive
+                    ? 'bg-white/20 text-white'
+                    : 'bg-bg text-muted'
+                }`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );

@@ -1,106 +1,111 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { DashboardStats } from '@/lib/calculations';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { BarChart3 } from 'lucide-react';
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from 'recharts';
+import { TrendingUp } from 'lucide-react';
 
 interface ExpiryChartProps {
-  stats: DashboardStats;
+  forecast: Array<{ month: string; value: number }>;
 }
 
-export default function ExpiryChart({ stats }: ExpiryChartProps) {
+// High-saturation botanical bar palette
+const BAR_COLORS = [
+  'var(--expired-color)',
+  'var(--warn-color)',
+  '#D97706',
+  'var(--watch-color)',
+  'var(--safe-color)',
+  '#7C3AED',
+];
+
+export default function ExpiryChart({ forecast }: ExpiryChartProps) {
   const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  const formatShort = (v: number) =>
+    v >= 1000 ? `৳${(v / 1000).toFixed(1)}k` : `৳${v}`;
 
-  const data = [
-    { name: 'Expired', value: stats.expired.totalValue, color: '#f43f5e' }, // rose-500
-    { name: '0–30 Days', value: stats.expiring30.totalValue, color: '#f59e0b' }, // amber-500
-    { name: '31–90 Days', value: stats.expiring90.totalValue, color: '#0ea5e9' }, // sky-500
-    { name: 'Safe (90+)', value: stats.safe.totalValue, color: '#10b981' }, // emerald-500
-  ];
+  const formatFull = (v: number) =>
+    `৳ ${Math.round(v).toLocaleString('en-US')}`;
 
-  const formatBDT = (value: number) => {
-    return `৳${Math.round(value).toLocaleString('en-US')}`;
-  };
+  const hasData = forecast.some((d) => d.value > 0);
 
   return (
-    <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow flex flex-col h-full min-h-[350px]">
-      <div className="flex items-center gap-2 mb-6">
-        <BarChart3 className="h-5 w-5 text-indigo-500" />
-        <h3 className="font-bold text-slate-800 text-lg">Value by Expiry Status</h3>
+    <div className="clay-card p-6 md:p-8 h-full flex flex-col">
+      <div className="flex items-center gap-2 mb-1">
+        <TrendingUp className="w-4 h-4 text-primary" strokeWidth={1.5} />
+        <h3 className="font-serif italic text-lg text-fg">
+          Value Expiring
+        </h3>
       </div>
+      <p className="text-xs text-muted mb-7">
+        Next 6 months — stock purchase value by calendar month
+      </p>
 
-      <div className="flex-1 w-full min-h-[220px]">
-        {mounted ? (
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={data}
-              margin={{ top: 10, right: 10, left: 10, bottom: 5 }}
-              layout="vertical"
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" horizontal={false} />
+      <div className="flex-1 min-h-[200px]">
+        {!mounted ? (
+            <div className="w-5 h-5 border-2 border-primary/25 border-t-primary rounded-full animate-spin" />
+        ) : !hasData ? (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-sm text-muted italic text-center">
+              No stock expiring in the next 6 months.
+            </p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={forecast} barCategoryGap="38%" margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
               <XAxis
-                type="number"
-                tickFormatter={formatBDT}
-                stroke="#94a3b8"
-                fontSize={11}
-                tickLine={false}
+                dataKey="month"
+                tick={{
+                  fontFamily: 'var(--font-dm-mono, monospace)',
+                  fontSize: 10,
+                  fill: 'var(--muted)',
+                }}
                 axisLine={false}
+                tickLine={false}
               />
               <YAxis
-                dataKey="name"
-                type="category"
-                stroke="#64748b"
-                fontSize={12}
-                width={85}
-                tickLine={false}
+                tick={{
+                  fontFamily: 'var(--font-dm-mono, monospace)',
+                  fill: 'var(--muted)',
+                  fontSize: 11,
+                }}
                 axisLine={false}
-                className="font-medium"
+                tickLine={false}
+                tickFormatter={(val) => `৳${(val / 1000).toFixed(0)}k`}
               />
               <Tooltip
-                formatter={(value: any) => [formatBDT(Number(value) || 0), 'Stock Value']}
+                cursor={{ fill: 'var(--bg)', opacity: 0.5 }}
                 contentStyle={{
-                  backgroundColor: '#ffffff',
-                  border: '1px solid #e2e8f0',
+                  backgroundColor: 'var(--card)',
+                  border: '1px solid var(--border)',
                   borderRadius: '12px',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
-                  fontSize: '12px',
-                  fontFamily: 'sans-serif',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
                 }}
-                cursor={{ fill: '#f8fafc' }}
+                itemStyle={{
+                  fontFamily: 'var(--font-mono, monospace)',
+                  color: 'var(--fg)',
+                }}
               />
-              <Bar dataKey="value" radius={[0, 6, 6, 0]} barSize={24}>
-                {data.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
+              <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                {forecast.map((_, i) => (
+                  <Cell
+                    key={`cell-${i}`}
+                    fill={BAR_COLORS[i % BAR_COLORS.length]}
+                  />
                 ))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        ) : (
-          <div className="w-full h-full flex items-center justify-center bg-slate-50 border border-slate-100 rounded-xl">
-            <span className="text-slate-400 text-sm">Loading chart...</span>
-          </div>
         )}
-      </div>
-
-      <div className="grid grid-cols-4 gap-2 mt-4 pt-4 border-t border-slate-100 text-center">
-        {data.map((item) => (
-          <div key={item.name} className="flex flex-col items-center">
-            <div className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full" style={{ backgroundColor: item.color }} />
-              <span className="text-[10px] sm:text-xs font-semibold text-slate-500 truncate max-w-[70px] sm:max-w-none">
-                {item.name}
-              </span>
-            </div>
-            <span className="text-xs sm:text-sm font-bold text-slate-800 mt-1">
-              {formatBDT(item.value)}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );

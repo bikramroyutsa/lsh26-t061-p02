@@ -1,33 +1,150 @@
 @import "tailwindcss";
 
+/* ─── Botanical Color System ──────────────────────────────────────────────── */
 :root {
-  --background: #f8fafc; /* slate-50 background */
-  --foreground: #0f172a; /* slate-900 foreground */
+  --bg:           #F4F2EA;
+  --fg:           #1A2B1F;
+  --primary:      #4A7C59;
+  --secondary:    #D4C4B0;
+  --border:       #DDD8CC;
+  --interactive:  #B84C2A;
+  --card:         #FFFFFF;
+  --muted:        #5A6B5E;
+  --navy:         #1A2B1F;
+
+  /* Status — high saturation for clear visual communication */
+  --expired-color:  #DC2626;
+  --expired-bg:     #FEF2F2;
+  --expired-border: #FECACA;
+  --warn-color:     #C2410C;
+  --warn-bg:        #FFF7ED;
+  --warn-border:    #FED7AA;
+  --watch-color:    #0369A1;
+  --watch-bg:       #E0F2FE;
+  --watch-border:   #BAE6FD;
+  --safe-color:     #166534;
+  --safe-bg:        #F0FDF4;
+  --safe-border:    #BBF7D0;
 }
 
+/* ─── Tailwind Theme Tokens ───────────────────────────────────────────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg:           var(--bg);
+  --color-fg:           var(--fg);
+  --color-primary:      var(--primary);
+  --color-secondary:    var(--secondary);
+  --color-muted:        var(--muted);
+  --color-interactive:  var(--interactive);
+  --color-border:       var(--border);
+
+  --color-border:       var(--border);
+
+  /* Status Colors */
+  --color-expired:        var(--expired-color);
+  --color-expired-bg:     var(--expired-bg);
+  --color-expired-border: var(--expired-border);
+  
+  --color-warn:           var(--warn-color);
+  --color-warn-bg:        var(--warn-bg);
+  --color-warn-border:    var(--warn-border);
+  
+  --color-watch:          var(--watch-color);
+  --color-watch-bg:       var(--watch-bg);
+  --color-watch-border:   var(--watch-border);
+  
+  --color-safe:           var(--safe-color);
+  --color-safe-bg:        var(--safe-bg);
+  --color-safe-border:    var(--safe-border);
+
+  /* Font families wired to next/font CSS variables */
+  --font-serif: var(--font-outfit);
+  --font-sans:  var(--font-inter);
+  --font-mono:  var(--font-dm-mono);
 }
 
+/* ─── Base ────────────────────────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--bg);
+  color: var(--fg);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* ─── Clay Card ───────────────────────────────────────────────────────────── */
+.clay-card {
+  background: var(--card);
+  border-radius: 24px;
+  box-shadow:
+    0 1px 0 rgba(0, 0, 0, 0.06),
+    0 4px 8px rgba(0, 0, 0, 0.05),
+    0 12px 32px rgba(0, 0, 0, 0.09);
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.clay-card-lift {
+  cursor: pointer;
+  transition: box-shadow 0.4s ease, transform 0.4s ease;
+}
+.clay-card-lift:hover {
+  box-shadow:
+    0 2px 0 rgba(0, 0, 0, 0.08),
+    0 8px 16px rgba(0, 0, 0, 0.07),
+    0 24px 48px rgba(0, 0, 0, 0.13);
+  transform: translateY(-3px);
+}
+
+/* ─── Keyframes ───────────────────────────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInBottom {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+@keyframes spinSlow {
+  to { transform: rotate(360deg); }
+}
+
+/* ─── Animation Utilities ─────────────────────────────────────────────────── */
+.animate-fade-up {
+  animation: fadeUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-slide-in-bottom {
+  animation: slideInBottom 0.32s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-pulse-dot {
+  animation: pulseDot 2s ease-in-out infinite;
+}
+
+/* ─── Scrollbar ───────────────────────────────────────────────────────────── */
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(26, 43, 31, 0.2) transparent;
+}
+
+/* Chrome, Edge, Safari */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(26, 43, 31, 0.2);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(26, 43, 31, 0.4);
 }

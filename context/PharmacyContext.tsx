@@ -2,12 +2,17 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Medicine } from '@/types/medicine';
-import { getMedicinesFromStorage, saveMedicinesToStorage, resetMedicinesStorage } from '@/lib/storage';
+import {
+  getMedicinesFromStorage,
+  saveMedicinesToStorage,
+  resetMedicinesStorage,
+} from '@/lib/storage';
 
 interface PharmacyContextType {
   medicines: Medicine[];
   addMedicine: (medicine: Omit<Medicine, 'id' | 'returned'>) => void;
   returnMedicine: (id: string) => void;
+  unreturnMedicine: (id: string) => void;
   resetData: () => void;
   loading: boolean;
 }
@@ -27,7 +32,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
   const addMedicine = (newMed: Omit<Medicine, 'id' | 'returned'>) => {
     const medicine: Medicine = {
       ...newMed,
-      id: `med-${Math.random().toString(36).substring(2, 9)}`,
+      id: crypto.randomUUID(),
       returned: false,
     };
     const updated = [...medicines, medicine];
@@ -50,6 +55,17 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
     saveMedicinesToStorage(updated);
   };
 
+  const unreturnMedicine = (id: string) => {
+    const updated = medicines.map((m) => {
+      if (m.id === id) {
+        return { ...m, returned: false, returnedDate: undefined };
+      }
+      return m;
+    });
+    setMedicines(updated);
+    saveMedicinesToStorage(updated);
+  };
+
   const resetData = () => {
     const reset = resetMedicinesStorage();
     setMedicines(reset);
@@ -62,6 +78,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         medicines,
         addMedicine,
         returnMedicine,
+        unreturnMedicine,
         resetData,
         loading,
       }}

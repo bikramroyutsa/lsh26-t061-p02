@@ -1,11 +1,16 @@
 'use client';
 
 import React from 'react';
+import {
+  calculateDashboardStats,
+  getUrgentMedicines,
+  getMonthlyExpiryForecast,
+} from '@/lib/calculations';
 import { usePharmacy } from '@/context/PharmacyContext';
-import { calculateDashboardStats } from '@/lib/calculations';
 import SummaryCards from '@/components/dashboard/SummaryCards';
 import FinancialRisk from '@/components/dashboard/FinancialRisk';
 import ExpiryChart from '@/components/dashboard/ExpiryChart';
+import UrgentBanner from '@/components/dashboard/UrgentBanner';
 import { Loader2 } from 'lucide-react';
 
 export default function DashboardPage() {
@@ -13,35 +18,43 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[400px] gap-2">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-        <span className="text-slate-500 font-medium text-sm">Loading dashboard metrics...</span>
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-3">
+        <Loader2 className="w-5 h-5 animate-spin text-primary" strokeWidth={1.5} />
+        <span className="font-sans text-sm text-muted">Loading dashboard…</span>
       </div>
     );
   }
 
   const stats = calculateDashboardStats(medicines);
+  const urgentItems = getUrgentMedicines(medicines, 2);
+  const forecast = getMonthlyExpiryForecast(medicines, 6);
+  const totalActive = medicines.filter((m) => !m.returned).length;
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Upper Info Section */}
+    <div className="space-y-10 animate-fade-up">
+      {/* Page heading */}
       <div>
-        <h2 className="text-lg font-bold text-slate-700 tracking-tight">Overview Summary</h2>
-        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-          Real-time count of active stock, total units, and capital valuation grouped by expiry risk.
+        <h2 className="font-serif italic text-3xl md:text-4xl text-fg tracking-tight">
+          Overview
+        </h2>
+        <p className="text-sm text-muted mt-1">
+          Real-time expiry risk and capital valuation for active stock.
         </p>
       </div>
 
-      {/* Summary Cards */}
-      <SummaryCards stats={stats} />
+      {/* Urgent banner — only shown when items expire within 2 days */}
+      {urgentItems.length > 0 && <UrgentBanner items={urgentItems} />}
 
-      {/* Analytics and Risk Analysis */}
+      {/* Summary KPI cards */}
+      <SummaryCards stats={stats} totalActive={totalActive} />
+
+      {/* Analytics row */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         <div className="lg:col-span-7">
           <FinancialRisk medicines={medicines} />
         </div>
         <div className="lg:col-span-5">
-          <ExpiryChart stats={stats} />
+          <ExpiryChart forecast={forecast} />
         </div>
       </div>
     </div>
