@@ -6,11 +6,19 @@ import { usePathname } from 'next/navigation';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { Calendar, RotateCcw, LogOut, Loader2, Leaf } from 'lucide-react';
+import { Calendar, RotateCcw, LogOut, Loader2, Leaf, LayoutDashboard, Package, Truck, Settings } from 'lucide-react';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
+
+const navItems = [
+  { name: 'Dashboard', href: '/', icon: LayoutDashboard },
+  { name: 'Active Inventory', href: '/inventory', icon: Package },
+  { name: 'Returned', href: '/returned', icon: Truck },
+  { name: 'Settings', href: '/settings', icon: Settings },
+];
 
 export default function Header() {
   const { resetData } = usePharmacy();
+  const pathname = usePathname();
   const {
     signOut,
     user,
@@ -99,6 +107,27 @@ export default function Header() {
             </div>
           </div>
 
+          {/* ── Desktop Nav (centered) ─────────────────────────────────── */}
+          <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
+            {navItems.map((item) => {
+              const isActive = pathname === item.href;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-300 ${
+                    isActive
+                      ? 'bg-fg text-white'
+                      : 'text-muted hover:text-fg hover:bg-border/60'
+                  }`}
+                >
+                  <item.icon className="w-3.5 h-3.5" strokeWidth={1.5} />
+                  <span>{item.name}</span>
+                </Link>
+              );
+            })}
+          </nav>
+
           {/* ── Controls (Workspace, Date, Sign Out) ───────────────────── */}
           <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 ml-auto justify-end">
             {/* Workspace switcher for owners */}
@@ -125,10 +154,11 @@ export default function Header() {
               </div>
             )}
 
-            <div className="hidden md:flex items-center gap-2 bg-bg border border-border px-3 py-1.5 rounded-lg text-sm text-fg font-medium">
-              <Calendar className="h-4 w-4 text-muted" />
-              <span>Today: {mounted ? dateStr : '...'}</span>
-            </div>
+            {mounted && (
+              <div className="hidden md:flex font-mono text-[11px] text-muted bg-white border border-border px-3 py-1.5 rounded-full">
+                {dateStr}
+              </div>
+            )}
 
             <button
               onClick={() => setIsConfirmOpen(true)}
