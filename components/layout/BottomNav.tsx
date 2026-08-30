@@ -3,12 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Truck } from 'lucide-react';
+import { LayoutDashboard, Package, Truck, Settings } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
   { name: 'Returned', href: '/returned', icon: Truck },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ];
 
 export default function BottomNav() {
@@ -23,8 +24,8 @@ export default function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
-              className={`flex flex-col items-center justify-center w-full h-full space-y-1 transition-colors ${
-                isActive ? 'text-primary' : 'text-muted hover:text-fg'
+              className={`flex flex-col items-center justify-center flex-1 mx-1 my-1.5 py-1.5 rounded-xl space-y-1 transition-all duration-300 ${
+                isActive ? 'bg-fg text-white' : 'text-muted hover:text-fg hover:bg-border/60'
               }`}
             >
               <item.icon
