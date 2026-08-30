@@ -48,6 +48,14 @@ export default function Header() {
     );
   }, []);
 
+  useEffect(() => {
+    if (pharmacy?.name) {
+      document.title = `${pharmacy.name} — MediShelf`;
+    } else {
+      document.title = 'MediShelf';
+    }
+  }, [pharmacy?.name]);
+
   const handleCreateNewPharmacy = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newPharmacyName.trim() || !user) return;
