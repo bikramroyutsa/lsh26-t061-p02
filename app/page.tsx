@@ -11,6 +11,7 @@ import { usePharmacy } from '@/context/PharmacyContext';
 import SummaryCards from '@/components/dashboard/SummaryCards';
 import FinancialRisk from '@/components/dashboard/FinancialRisk';
 import ExpiryChart from '@/components/dashboard/ExpiryChart';
+import GeminiSuggestion from '@/components/dashboard/GeminiSuggestion';
 import UrgentBanner from '@/components/dashboard/UrgentBanner';
 import { Loader2, Plus, Server, PackageOpen } from 'lucide-react';
 
@@ -113,8 +114,9 @@ export default function DashboardPage() {
         <div className="lg:col-span-7">
           <FinancialRisk medicines={medicines} />
         </div>
-        <div className="lg:col-span-5">
+        <div className="lg:col-span-5 flex flex-col h-full">
           <ExpiryChart forecast={forecast} />
+          <GeminiSuggestion medicines={medicines} />
         </div>
       </div>
     </div>
