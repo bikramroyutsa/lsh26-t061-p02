@@ -1,12 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { Plus, X } from 'lucide-react';
 
 export default function MedicineForm() {
   const { addMedicine } = usePharmacy();
   const [isOpen, setIsOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Form state
   const [name, setName] = useState('');
@@ -80,12 +86,12 @@ export default function MedicineForm() {
       </button>
 
       {/* ── Modal backdrop ────────────────────────────────────────────── */}
-      {isOpen && (
+      {mounted && isOpen && createPortal(
         <div
-          className="fixed inset-0 bg-fg/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-up"
+          className="fixed inset-0 bg-fg/40 backdrop-blur-sm flex items-start justify-center z-[999] p-4 pt-20"
           onClick={(e) => e.target === e.currentTarget && handleClose()}
         >
-          <div className="bg-bg rounded-3xl max-w-md w-full shadow-2xl overflow-hidden">
+          <div className="bg-bg rounded-3xl max-w-md w-full shadow-2xl overflow-hidden animate-fade-up">
             {/* Header */}
             <div className="flex items-center justify-between px-7 py-5 border-b border-border">
               <h3 className="font-serif italic text-xl text-fg">
@@ -228,7 +234,8 @@ export default function MedicineForm() {
               </div>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );

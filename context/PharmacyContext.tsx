@@ -13,6 +13,7 @@ interface PharmacyContextType {
   unreturnMedicine: (id: string) => Promise<void>;
   sellMedicines: (items: { id: string; quantity: number }[]) => Promise<void>;
   resetData: () => Promise<void>;
+  clearInventory: () => Promise<void>;
   loading: boolean;
 }
 
@@ -198,6 +199,26 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const clearInventory = async () => {
+    if (!profile || !profile.pharmacy_id) return;
+
+    try {
+      setLoading(true);
+      const { error } = await supabase
+        .from('medicines')
+        .delete()
+        .eq('pharmacy_id', profile.pharmacy_id);
+      if (error) throw error;
+
+      setMedicines([]);
+    } catch (e) {
+      console.error('Error clearing inventory in Supabase:', e);
+      alert('Failed to clear inventory.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const resetData = async () => {
     if (!profile || !profile.pharmacy_id) return;
 
@@ -251,6 +272,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         unreturnMedicine,
         sellMedicines,
         resetData,
+        clearInventory,
         loading,
       }}
     >
