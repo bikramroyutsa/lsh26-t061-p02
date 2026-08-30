@@ -100,8 +100,8 @@ export default function Header() {
   return (
     <>
       <header className="sticky top-0 z-40 bg-bg/95 backdrop-blur-sm border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-10">
-        <div className="flex items-center h-[68px] gap-6">
+      <div className="w-full px-4 sm:px-6 lg:px-8 2xl:px-12 mx-auto">
+        <div className="flex items-center h-[68px] gap-4 lg:gap-6">
 
           {/* ── Brand ─────────────────────────────────────────────────────── */}
           <div className="flex-shrink-0 flex items-center gap-3">
@@ -132,7 +132,7 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-[13px] font-medium transition-all duration-300 ${
+                  className={`flex items-center gap-1.5 px-3 lg:px-4 py-2 rounded-full text-[12px] lg:text-[13px] font-medium whitespace-nowrap transition-all duration-300 ${
                     isActive
                       ? 'bg-fg text-white'
                       : 'text-muted hover:text-fg hover:bg-border/60'
@@ -157,7 +157,7 @@ export default function Header() {
 
             <button
               onClick={() => setIsConfirmOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-muted hover:text-fg hover:bg-border/60 transition-all duration-300 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-muted hover:text-fg hover:bg-border/60 transition-all duration-300 whitespace-nowrap cursor-pointer"
               title="Reset stock list to original 42 sample medicines"
             >
               <RotateCcw className="w-3.5 h-3.5" strokeWidth={1.5} />
@@ -166,7 +166,7 @@ export default function Header() {
 
             <button
               onClick={() => setIsSignOutOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-muted hover:text-expired hover:bg-expired-bg transition-all duration-300 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[13px] font-medium text-muted hover:text-expired hover:bg-expired-bg transition-all duration-300 whitespace-nowrap cursor-pointer"
               title="Sign out of Pharmacy Portal"
             >
               <LogOut className="w-3.5 h-3.5" strokeWidth={1.5} />
