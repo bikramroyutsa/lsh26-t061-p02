@@ -1,15 +1,12 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Medicine } from '@/types/medicine';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { getDaysRemaining, formatLocalDate } from '@/lib/expiry';
-import {
-  getExpiryCategory,
-  getCategoryLabel,
-  getMedicineValue,
-} from '@/lib/calculations';
+import { getExpiryCategory, getCategoryLabel, getMedicineValue, getMedicinePrice, getMedicineExpiry } from '@/lib/calculations';
 import { CornerUpLeft, Package } from 'lucide-react';
+import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 interface InventoryTableProps {
   medicines: Medicine[];
@@ -26,6 +23,7 @@ const STATUS_STYLE: Record<StyleKey, { badge: string; days: string }> = {
 
 export default function InventoryTable({ medicines }: InventoryTableProps) {
   const { returnMedicine } = usePharmacy();
+  const [selectedMedicine, setSelectedMedicine] = useState<Medicine | null>(null);
 
   const formatBDT = (value: number) => `৳ ${value.toFixed(2)}`;
 
@@ -79,7 +77,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
           </thead>
           <tbody>
             {medicines.map((m) => {
-              const days = getDaysRemaining(m.expiryDate);
+              const days = getDaysRemaining(getMedicineExpiry(m));
               const category = getExpiryCategory(days);
               const label = getCategoryLabel(category);
               const value = getMedicineValue(m);
@@ -117,7 +115,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
                   {/* Unit Price */}
                   <td className="py-4 px-4">
                     <span className="font-mono text-sm text-muted">
-                      {formatBDT(m.unitPriceBDT)}
+                      {formatBDT(getMedicinePrice(m))}
                     </span>
                   </td>
 
@@ -131,7 +129,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
                   {/* Expiry Date */}
                   <td className="py-4 px-4">
                     <span className="font-mono text-sm text-muted">
-                      {formatLocalDate(m.expiryDate)}
+                      {formatLocalDate(getMedicineExpiry(m))}
                     </span>
                   </td>
 
@@ -154,17 +152,9 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
                   {/* Action */}
                   <td className="py-4 px-4 pr-6">
                     <button
-                      onClick={() => {
-                        if (
-                          window.confirm(
-                            `Return ${m.name} (${m.batch}) to the distributor?`
-                          )
-                        ) {
-                          returnMedicine(m.id);
-                        }
-                      }}
-                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-interactive hover:text-white hover:bg-interactive border border-[#E8CEBE] hover:border-interactive rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap"
-                      title="Return to Distributor"
+                      onClick={() => setSelectedMedicine(m)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-interactive hover:text-white hover:bg-interactive border border-border hover:border-interactive rounded-full transition-all duration-300 cursor-pointer whitespace-nowrap"
+                      title="Return Stock to Distributor"
                     >
                       <CornerUpLeft className="w-3 h-3" strokeWidth={1.5} />
                       Return
@@ -176,6 +166,26 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Custom Confirmation Popup */}
+      <ConfirmationModal
+        isOpen={selectedMedicine !== null}
+        title="Confirm Stock Return"
+        message={
+          selectedMedicine
+            ? `Are you sure you want to return ${selectedMedicine.name} (Batch: ${selectedMedicine.batch}) to the distributor? It will leave the active inventory and dashboard risk counts.`
+            : ''
+        }
+        confirmLabel="Confirm Return"
+        variant="danger"
+        onConfirm={() => {
+          if (selectedMedicine) {
+            returnMedicine(selectedMedicine.id);
+            setSelectedMedicine(null);
+          }
+        }}
+        onCancel={() => setSelectedMedicine(null)}
+      />
     </div>
   );
 }

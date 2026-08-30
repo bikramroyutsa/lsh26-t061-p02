@@ -53,7 +53,9 @@ export default function MedicineForm() {
       batch: batch.trim().toUpperCase(),
       quantity: parseInt(quantity, 10),
       unitPriceBDT: parseFloat(unitPriceBDT),
+      unit_price_bdt: parseFloat(unitPriceBDT).toFixed(2),
       expiryDate,
+      expiry: expiryDate,
     });
     handleClose();
   };

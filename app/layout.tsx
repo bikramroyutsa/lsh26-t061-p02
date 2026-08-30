@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Outfit, Inter, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { PharmacyProvider } from "@/context/PharmacyContext";
+import { AuthProvider } from "@/context/AuthContext";
+import AppAuthWrapper from "@/components/layout/AppAuthWrapper";
 import Header from "@/components/layout/Header";
 import BottomNav from "@/components/layout/BottomNav";
 
@@ -49,13 +51,17 @@ export default function RootLayout({
           }}
           aria-hidden="true"
         />
-        <PharmacyProvider>
-          <Header />
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 md:py-12">
-            {children}
-          </main>
-          <BottomNav />
-        </PharmacyProvider>
+        <AuthProvider>
+          <PharmacyProvider>
+            <AppAuthWrapper>
+              <Header />
+              <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 md:py-12">
+                {children}
+              </main>
+              <BottomNav />
+            </AppAuthWrapper>
+          </PharmacyProvider>
+        </AuthProvider>
       </body>
     </html>
   );

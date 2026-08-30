@@ -7,10 +7,27 @@ export function parseLocalDate(dateStr: string): Date {
   return new Date(year, month - 1, day);
 }
 
+let mockToday: Date | null = null;
+
+/**
+ * Overrides today's date for testing purposes. Pass null to reset.
+ */
+export function setMockToday(dateStr: string | null) {
+  if (dateStr) {
+    const [year, month, day] = dateStr.split('-').map(Number);
+    mockToday = new Date(year, month - 1, day);
+  } else {
+    mockToday = null;
+  }
+}
+
 /**
  * Returns a Date object representing today's local midnight.
  */
 export function getTodayLocal(): Date {
+  if (mockToday) {
+    return new Date(mockToday.getTime());
+  }
   const today = new Date();
   return new Date(today.getFullYear(), today.getMonth(), today.getDate());
 }
