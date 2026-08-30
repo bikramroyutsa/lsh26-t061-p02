@@ -3,11 +3,13 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Truck, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, Truck, Settings, TrendingDown, ShoppingBag } from 'lucide-react';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
+  { name: 'Loss', href: '/expiry-loss', icon: TrendingDown },
+  { name: 'Sell', href: '/sell', icon: ShoppingBag },
   { name: 'Returned', href: '/returned', icon: Truck },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];

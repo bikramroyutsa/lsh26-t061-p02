@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { LayoutDashboard, Package, Truck, Settings } from 'lucide-react';
+import { LayoutDashboard, Package, Truck, Settings, TrendingDown, ShoppingBag } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
@@ -20,6 +20,16 @@ export default function Navigation() {
       name: 'Active Inventory',
       href: '/inventory',
       icon: Package,
+    },
+    {
+      name: 'Expiry Loss',
+      href: '/expiry-loss',
+      icon: TrendingDown,
+    },
+    {
+      name: 'Sell Medicine',
+      href: '/sell',
+      icon: ShoppingBag,
     },
     {
       name: 'Returned to Distributor',

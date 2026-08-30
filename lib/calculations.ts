@@ -187,3 +187,128 @@ export function getMonthlyExpiryForecast(
     };
   });
 }
+
+export type LossIntervalKey = 'expired' | '0-7' | '8-14' | '15-21' | '22-28' | 'safe28';
+
+export interface IntervalStats {
+  key: LossIntervalKey;
+  label: string;
+  description: string;
+  count: number;
+  totalQuantity: number;
+  totalValue: number;
+  items: MedicineRiskInfo[];
+}
+
+export interface ExpiryLossBreakdown {
+  alreadyExpired: IntervalStats;
+  toExpireIntervals: IntervalStats[];
+  totalToLose28Days: number;
+  totalAlreadyExpiredLoss: number;
+}
+
+export function getLossIntervalKey(daysRemaining: number): LossIntervalKey {
+  if (daysRemaining < 0) return 'expired';
+  if (daysRemaining <= 7) return '0-7';
+  if (daysRemaining <= 14) return '8-14';
+  if (daysRemaining <= 21) return '15-21';
+  if (daysRemaining <= 28) return '22-28';
+  return 'safe28';
+}
+
+export function calculateExpiryLossBreakdown(medicines: Medicine[]): ExpiryLossBreakdown {
+  const activeMedicines = medicines.filter((m) => !m.returned);
+
+  const alreadyExpired: IntervalStats = {
+    key: 'expired',
+    label: 'Already Expired',
+    description: 'Realized Financial Loss (Past Expiry)',
+    count: 0,
+    totalQuantity: 0,
+    totalValue: 0,
+    items: [],
+  };
+
+  const toExpireMap: Record<'0-7' | '8-14' | '15-21' | '22-28', IntervalStats> = {
+    '0-7': {
+      key: '0-7',
+      label: '0–7 Days',
+      description: 'Expiring in 0 to 7 days',
+      count: 0,
+      totalQuantity: 0,
+      totalValue: 0,
+      items: [],
+    },
+    '8-14': {
+      key: '8-14',
+      label: '8–14 Days',
+      description: 'Expiring in 8 to 14 days',
+      count: 0,
+      totalQuantity: 0,
+      totalValue: 0,
+      items: [],
+    },
+    '15-21': {
+      key: '15-21',
+      label: '15–21 Days',
+      description: 'Expiring in 15 to 21 days',
+      count: 0,
+      totalQuantity: 0,
+      totalValue: 0,
+      items: [],
+    },
+    '22-28': {
+      key: '22-28',
+      label: '22–28 Days',
+      description: 'Expiring in 22 to 28 days',
+      count: 0,
+      totalQuantity: 0,
+      totalValue: 0,
+      items: [],
+    },
+  };
+
+  activeMedicines.forEach((m) => {
+    const days = getDaysRemaining(getMedicineExpiry(m));
+    const category = getExpiryCategory(days);
+    const value = getMedicineValue(m);
+    const riskInfo: MedicineRiskInfo = { medicine: m, daysRemaining: days, category, valueAtRisk: value };
+    const intervalKey = getLossIntervalKey(days);
+
+    if (intervalKey === 'expired') {
+      alreadyExpired.count += 1;
+      alreadyExpired.totalQuantity += m.quantity;
+      alreadyExpired.totalValue += value;
+      alreadyExpired.items.push(riskInfo);
+    } else if (intervalKey in toExpireMap) {
+      const stats = toExpireMap[intervalKey as keyof typeof toExpireMap];
+      stats.count += 1;
+      stats.totalQuantity += m.quantity;
+      stats.totalValue += value;
+      stats.items.push(riskInfo);
+    }
+  });
+
+  // Sort items in each category by urgency / days remaining ascending
+  alreadyExpired.items.sort((a, b) => a.daysRemaining - b.daysRemaining);
+  Object.values(toExpireMap).forEach((stats) => {
+    stats.items.sort((a, b) => a.daysRemaining - b.daysRemaining);
+  });
+
+  const toExpireIntervals = [
+    toExpireMap['0-7'],
+    toExpireMap['8-14'],
+    toExpireMap['15-21'],
+    toExpireMap['22-28'],
+  ];
+
+  const totalToLose28Days = toExpireIntervals.reduce((sum, item) => sum + item.totalValue, 0);
+
+  return {
+    alreadyExpired,
+    toExpireIntervals,
+    totalToLose28Days,
+    totalAlreadyExpiredLoss: alreadyExpired.totalValue,
+  };
+}
+

@@ -11,6 +11,7 @@ interface PharmacyContextType {
   addMedicine: (medicine: Omit<Medicine, 'id' | 'returned'>) => Promise<void>;
   returnMedicine: (id: string) => Promise<void>;
   unreturnMedicine: (id: string) => Promise<void>;
+  sellMedicines: (items: { id: string; quantity: number }[]) => Promise<void>;
   resetData: () => Promise<void>;
   loading: boolean;
 }
@@ -159,6 +160,44 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sellMedicines = async (items: { id: string; quantity: number }[]) => {
+    if (!profile || !profile.pharmacy_id || items.length === 0) return;
+
+    try {
+      for (const item of items) {
+        const currentMed = medicines.find((m) => m.id === item.id);
+        if (!currentMed) continue;
+        const newQty = Math.max(0, currentMed.quantity - item.quantity);
+
+        const { error } = await supabase
+          .from('medicines')
+          .update({ quantity: newQty })
+          .eq('id', item.id)
+          .eq('pharmacy_id', profile.pharmacy_id);
+
+        if (error) throw error;
+      }
+
+      // Update client-side state
+      setMedicines((prev) =>
+        prev.map((m) => {
+          const soldItem = items.find((i) => i.id === m.id);
+          if (soldItem) {
+            return {
+              ...m,
+              quantity: Math.max(0, m.quantity - soldItem.quantity),
+            };
+          }
+          return m;
+        })
+      );
+    } catch (e) {
+      console.error('Error completing sale in Supabase:', e);
+      alert('Failed to update inventory for sale.');
+      throw e;
+    }
+  };
+
   const resetData = async () => {
     if (!profile || !profile.pharmacy_id) return;
 
@@ -210,6 +249,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         addMedicine,
         returnMedicine,
         unreturnMedicine,
+        sellMedicines,
         resetData,
         loading,
       }}
