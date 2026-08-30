@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { Medicine } from '@/types/medicine';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { getDaysRemaining, formatLocalDate } from '@/lib/expiry';
-import { getExpiryCategory, getCategoryLabel, getMedicineValue } from '@/lib/calculations';
+import { getExpiryCategory, getCategoryLabel, getMedicineValue, getMedicinePrice, getMedicineExpiry } from '@/lib/calculations';
 import { Trash2 } from 'lucide-react';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
@@ -77,7 +77,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
           </thead>
           <tbody className="divide-y divide-slate-100 text-sm text-slate-700">
             {medicines.map((m) => {
-              const days = getDaysRemaining(m.expiryDate);
+              const days = getDaysRemaining(getMedicineExpiry(m));
               const category = getExpiryCategory(days);
               const label = getCategoryLabel(category);
               const value = getMedicineValue(m);
@@ -102,7 +102,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
                   </td>
                   {/* Unit Price */}
                   <td className="py-3.5 px-4 text-right font-medium text-slate-500">
-                    {formatBDT(m.unitPriceBDT)}
+                    {formatBDT(getMedicinePrice(m))}
                   </td>
                   {/* Total Value */}
                   <td className="py-3.5 px-4 text-right font-bold text-slate-900">
@@ -110,7 +110,7 @@ export default function InventoryTable({ medicines }: InventoryTableProps) {
                   </td>
                   {/* Expiry Date */}
                   <td className="py-3.5 px-4 text-slate-600 font-medium">
-                    {formatLocalDate(m.expiryDate)}
+                    {formatLocalDate(getMedicineExpiry(m))}
                   </td>
                   {/* Days Remaining */}
                   <td

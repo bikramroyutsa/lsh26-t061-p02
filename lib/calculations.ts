@@ -18,6 +18,22 @@ export interface DashboardStats {
 export type ExpiryCategory = 'expired' | 'expiring30' | 'expiring90' | 'safe';
 
 /**
+ * Safely extracts the medicine price, supporting both camelCase and snake_case schemas.
+ */
+export function getMedicinePrice(m: Medicine): number {
+  if (m.unitPriceBDT !== undefined && !isNaN(m.unitPriceBDT)) return m.unitPriceBDT;
+  if (m.unit_price_bdt !== undefined) return parseFloat(String(m.unit_price_bdt)) || 0;
+  return 0;
+}
+
+/**
+ * Safely extracts the expiry date, supporting both camelCase and snake_case schemas.
+ */
+export function getMedicineExpiry(m: Medicine): string {
+  return m.expiryDate || m.expiry || '';
+}
+
+/**
  * Returns the dynamic category based on remaining days.
  * - Expired: < 0 days
  * - Expiring within 30 days: 0 to 30 days inclusive
@@ -48,10 +64,10 @@ export function getCategoryLabel(category: ExpiryCategory): string {
 }
 
 /**
- * Calculates value for a single medicine: quantity * unitPriceBDT
+ * Calculates value for a single medicine: quantity * unitPriceBDT (or unit_price_bdt)
  */
 export function getMedicineValue(medicine: Medicine): number {
-  return medicine.quantity * medicine.unitPriceBDT;
+  return medicine.quantity * getMedicinePrice(medicine);
 }
 
 /**
@@ -70,7 +86,7 @@ export function calculateDashboardStats(medicines: Medicine[]): DashboardStats {
   };
 
   activeMedicines.forEach((m) => {
-    const days = getDaysRemaining(m.expiryDate);
+    const days = getDaysRemaining(getMedicineExpiry(m));
     const category = getExpiryCategory(days);
     const value = getMedicineValue(m);
 
@@ -101,7 +117,7 @@ export function getHighestValueAtRisk(medicines: Medicine[], limit = 5): Medicin
 
   const riskList: MedicineRiskInfo[] = activeMedicines
     .map((m) => {
-      const days = getDaysRemaining(m.expiryDate);
+      const days = getDaysRemaining(getMedicineExpiry(m));
       const category = getExpiryCategory(days);
       const value = getMedicineValue(m);
       return { medicine: m, daysRemaining: days, category, valueAtRisk: value };

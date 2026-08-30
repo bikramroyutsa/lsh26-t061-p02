@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { Medicine } from '@/types/medicine';
-import { getMedicineValue } from '@/lib/calculations';
+import { getMedicineValue, getMedicinePrice, getMedicineExpiry } from '@/lib/calculations';
 import { formatLocalDate } from '@/lib/expiry';
 import { ArchiveRestore, CalendarRange } from 'lucide-react';
 
@@ -69,7 +69,7 @@ export default function ReturnedTable({ medicines }: ReturnedTableProps) {
                   </td>
                   {/* Unit price */}
                   <td className="py-3.5 px-4 text-right font-medium text-slate-500">
-                    {formatBDT(m.unitPriceBDT)}
+                    {formatBDT(getMedicinePrice(m))}
                   </td>
                   {/* Total Value */}
                   <td className="py-3.5 px-4 text-right font-bold text-slate-900">
@@ -77,7 +77,7 @@ export default function ReturnedTable({ medicines }: ReturnedTableProps) {
                   </td>
                   {/* Original Expiry */}
                   <td className="py-3.5 px-4 text-slate-500 font-medium">
-                    {formatLocalDate(m.expiryDate)}
+                    {formatLocalDate(getMedicineExpiry(m))}
                   </td>
                   {/* Returned Date */}
                   <td className="py-3.5 px-4 sm:px-6 text-indigo-600 font-semibold">
