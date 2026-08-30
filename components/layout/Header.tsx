@@ -6,12 +6,14 @@ import { usePathname } from 'next/navigation';
 import { usePharmacy } from '@/context/PharmacyContext';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabaseClient';
-import { Calendar, RotateCcw, LogOut, Loader2, Leaf, LayoutDashboard, Package, Truck, Settings, Plus } from 'lucide-react';
+import { Calendar, RotateCcw, LogOut, Loader2, Leaf, LayoutDashboard, Package, Truck, Settings, Plus, TrendingDown, ShoppingBag } from 'lucide-react';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 const navItems = [
   { name: 'Dashboard', href: '/', icon: LayoutDashboard },
   { name: 'Active Inventory', href: '/inventory', icon: Package },
+  { name: 'Expiry Loss', href: '/expiry-loss', icon: TrendingDown },
+  { name: 'Sell Medicine', href: '/sell', icon: ShoppingBag },
   { name: 'Returned', href: '/returned', icon: Truck },
   { name: 'Settings', href: '/settings', icon: Settings },
 ];
