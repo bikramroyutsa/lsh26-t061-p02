@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import AuthScreen from '@/components/auth/AuthScreen';
 import Onboarding from '@/components/auth/Onboarding';
+import LandingPage from '@/components/landing/LandingPage';
 import { supabase } from '@/lib/supabaseClient';
 import { Loader2, ShieldAlert, LogOut, ArrowLeft } from 'lucide-react';
 import ConfirmationModal from '../ui/ConfirmationModal';
@@ -12,6 +13,7 @@ export default function AppAuthWrapper({ children }: { children: React.ReactNode
   const { user, profile, pharmacy, loading, signOut, refreshProfile } = useAuth();
   const [cancellingRequest, setCancellingRequest] = useState(false);
   const [isSignOutOpen, setIsSignOutOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
 
   const handleCancelRequest = async () => {
     if (!user) return;
@@ -38,16 +40,19 @@ export default function AppAuthWrapper({ children }: { children: React.ReactNode
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center gap-2">
-        <Loader2 className="h-8 w-8 animate-spin text-indigo-600" />
-        <span className="text-slate-500 font-medium text-sm">Verifying security session...</span>
+      <div className="min-h-screen bg-bg flex flex-col items-center justify-center gap-3">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="text-muted font-medium text-sm animate-pulse">Verifying security session...</span>
       </div>
     );
   }
 
   // 1. Not Authenticated
   if (!user) {
-    return <AuthScreen />;
+    if (showLogin) {
+      return <AuthScreen />;
+    }
+    return <LandingPage onLogin={() => setShowLogin(true)} />;
   }
 
   // 2. Authenticated but no pharmacy selected/created yet
@@ -58,31 +63,31 @@ export default function AppAuthWrapper({ children }: { children: React.ReactNode
   // 3. Requested a pharmacy but request is pending owner approval
   if (profile.status === 'pending') {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white border border-slate-200 rounded-3xl shadow-xl p-6 sm:p-8 space-y-6 text-center">
-          <div className="mx-auto bg-amber-50 text-amber-500 p-4 rounded-2xl w-fit">
-            <ShieldAlert className="h-8 w-8" />
+      <div className="min-h-screen bg-bg flex items-center justify-center p-4">
+        <div className="clay-card max-w-md w-full p-8 space-y-6 text-center animate-fade-up">
+          <div className="mx-auto bg-interactive/10 text-interactive p-4 rounded-full w-fit">
+            <ShieldAlert className="h-8 w-8" strokeWidth={1.5} />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <h2 className="text-2xl font-serif font-bold text-fg tracking-tight">
               Access Request Pending
             </h2>
-            <p className="text-sm text-slate-500 mt-2 leading-relaxed">
-              Your request to join <strong className="text-slate-700 font-bold">{pharmacy?.name || 'the workspace'}</strong> is waiting for approval from the pharmacy owner.
+            <p className="text-sm text-muted mt-2 leading-relaxed">
+              Your request to join <strong className="text-fg font-bold">{pharmacy?.name || 'the workspace'}</strong> is waiting for approval from the pharmacy owner.
             </p>
           </div>
 
-          <div className="flex flex-col gap-2.5 pt-4">
+          <div className="flex flex-col gap-3 pt-4">
             <button
               onClick={handleCancelRequest}
               disabled={cancellingRequest}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold text-sm rounded-lg transition-colors cursor-pointer disabled:bg-slate-50 disabled:cursor-not-allowed"
+              className="w-full flex items-center justify-center gap-1.5 py-3 px-4 bg-white border border-border hover:border-primary/50 hover:bg-safe-bg text-fg font-semibold text-sm rounded-full transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
             >
               {cancellingRequest ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
                 <>
-                  <ArrowLeft className="h-4 w-4" />
+                  <ArrowLeft className="h-4 w-4" strokeWidth={2} />
                   <span>Choose Another Pharmacy</span>
                 </>
               )}
@@ -90,9 +95,9 @@ export default function AppAuthWrapper({ children }: { children: React.ReactNode
 
             <button
               onClick={() => setIsSignOutOpen(true)}
-              className="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 bg-white border border-rose-200 hover:bg-rose-50 text-rose-600 font-bold text-sm rounded-lg transition-colors cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-3 px-4 bg-white border border-expired-border hover:bg-expired-bg text-expired font-semibold text-sm rounded-full transition-all cursor-pointer shadow-sm"
             >
-              <LogOut className="h-4 w-4 text-rose-400" />
+              <LogOut className="h-4 w-4" strokeWidth={2} />
               <span>Sign Out</span>
             </button>
           </div>

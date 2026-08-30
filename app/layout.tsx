@@ -58,6 +58,9 @@ export default function RootLayout({
               <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-10 py-8 md:py-12">
                 {children}
               </main>
+              <footer className="w-full text-center py-6 pb-24 md:pb-6 text-[10px] text-muted font-mono tracking-wider border-t border-border/30">
+                LSH26-T061 • P02 • LSH26-8490-C900
+              </footer>
               <BottomNav />
             </AppAuthWrapper>
           </PharmacyProvider>
