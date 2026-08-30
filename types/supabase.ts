@@ -22,6 +22,7 @@ export type Database = {
           expiry: string
           id: string
           name: string
+          pharmacy_id: string | null
           quantity: number
           returned: boolean
           returned_date: string | null
@@ -34,6 +35,7 @@ export type Database = {
           expiry: string
           id: string
           name: string
+          pharmacy_id?: string | null
           quantity: number
           returned?: boolean
           returned_date?: string | null
@@ -46,19 +48,84 @@ export type Database = {
           expiry?: string
           id?: string
           name?: string
+          pharmacy_id?: string | null
           quantity?: number
           returned?: boolean
           returned_date?: string | null
           unit_price_bdt?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "medicines_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pharmacies: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+        }
         Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          pharmacy_id: string | null
+          role: string | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id: string
+          pharmacy_id?: string | null
+          role?: string | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          pharmacy_id?: string | null
+          role?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_pharmacy_id_fkey"
+            columns: ["pharmacy_id"]
+            isOneToOne: false
+            referencedRelation: "pharmacies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      is_pharmacy_owner: { Args: { p_id: string }; Returns: boolean }
     }
     Enums: {
       [_ in never]: never

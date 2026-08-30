@@ -19,7 +19,7 @@ const PharmacyContext = createContext<PharmacyContextType | undefined>(undefined
 export function PharmacyProvider({ children }: { children: React.ReactNode }) {
   const [medicines, setMedicines] = useState<Medicine[]>([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
 
   // Helper to map Supabase database row to the client-side Medicine interface
   const mapDbRowToMedicine = (row: any): Medicine => ({
@@ -34,37 +34,23 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
     expiry: row.expiry,
     returned: row.returned,
     returnedDate: row.returned_date || undefined,
+    pharmacy_id: row.pharmacy_id || undefined,
   });
 
   const fetchMedicines = async () => {
+    if (!profile || !profile.pharmacy_id) return;
     try {
       setLoading(true);
       const { data, error } = await supabase
         .from('medicines')
         .select('*')
+        .eq('pharmacy_id', profile.pharmacy_id)
         .order('created_at', { ascending: true });
 
       if (error) throw error;
 
       if (!data || data.length === 0) {
-        // Remote database is empty. Seed it with the 42 sample medicines automatically!
-        const sampleData = generateSampleData();
-        const rowsToInsert = sampleData.map((m) => ({
-          id: m.id,
-          name: m.name,
-          company: m.company,
-          batch: m.batch,
-          quantity: m.quantity,
-          unit_price_bdt: m.unitPriceBDT,
-          expiry: m.expiryDate,
-          returned: m.returned || false,
-          returned_date: m.returnedDate || null,
-        }));
-
-        const { error: insertError } = await supabase.from('medicines').insert(rowsToInsert);
-        if (insertError) throw insertError;
-
-        setMedicines(sampleData);
+        setMedicines([]);
       } else {
         setMedicines(data.map(mapDbRowToMedicine));
       }
@@ -75,22 +61,25 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Load database items whenever the authenticated user state changes
+  // Load database items whenever the authenticated user state or pharmacy changes
   useEffect(() => {
-    if (user) {
+    if (user && profile?.pharmacy_id && profile?.status === 'approved') {
       fetchMedicines();
     } else {
       setMedicines([]);
       setLoading(false);
     }
-  }, [user]);
+  }, [user, profile]);
 
   const addMedicine = async (newMed: Omit<Medicine, 'id' | 'returned'>) => {
+    if (!profile || !profile.pharmacy_id) return;
+
     const id = `med-${Math.random().toString(36).substring(2, 9)}`;
     const medicine: Medicine = {
       ...newMed,
       id,
       returned: false,
+      pharmacy_id: profile.pharmacy_id,
     };
 
     try {
@@ -105,6 +94,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
           expiry: newMed.expiryDate,
           returned: false,
           returned_date: null,
+          pharmacy_id: profile.pharmacy_id,
         },
       ]);
       if (error) throw error;
@@ -118,6 +108,8 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
   };
 
   const returnMedicine = async (id: string) => {
+    if (!profile || !profile.pharmacy_id) return;
+
     const returnedDate = new Date().toISOString().split('T')[0];
     try {
       const { error } = await supabase
@@ -126,7 +118,8 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
           returned: true,
           returned_date: returnedDate,
         })
-        .eq('id', id);
+        .eq('id', id)
+        .eq('pharmacy_id', profile.pharmacy_id); // check scope
 
       if (error) throw error;
 
@@ -141,15 +134,24 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
   };
 
   const resetData = async () => {
+    if (!profile || !profile.pharmacy_id) return;
+
     try {
       setLoading(true);
 
-      // Clean existing records from database
-      const { error: deleteError } = await supabase.from('medicines').delete().neq('id', '');
+      // Clean existing records scoped to this pharmacy from database
+      const { error: deleteError } = await supabase
+        .from('medicines')
+        .delete()
+        .eq('pharmacy_id', profile.pharmacy_id);
       if (deleteError) throw deleteError;
 
       // Seed default sample data back in
-      const sampleData = generateSampleData();
+      const sampleData = generateSampleData().map((m) => ({
+        ...m,
+        id: `${m.id}-${profile.pharmacy_id!.substring(0, 8)}`,
+        pharmacy_id: profile.pharmacy_id!,
+      }));
       const rowsToInsert = sampleData.map((m) => ({
         id: m.id,
         name: m.name,
@@ -160,6 +162,7 @@ export function PharmacyProvider({ children }: { children: React.ReactNode }) {
         expiry: m.expiryDate,
         returned: m.returned || false,
         returned_date: m.returnedDate || null,
+        pharmacy_id: profile.pharmacy_id,
       }));
 
       const { error: insertError } = await supabase.from('medicines').insert(rowsToInsert);

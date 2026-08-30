@@ -3,10 +3,12 @@
 import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Package, Truck } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { LayoutDashboard, Package, Truck, Settings } from 'lucide-react';
 
 export default function Navigation() {
   const pathname = usePathname();
+  const { profile } = useAuth();
 
   const navItems = [
     {
@@ -25,6 +27,15 @@ export default function Navigation() {
       icon: Truck,
     },
   ];
+
+  // Only show Settings to pharmacy owners
+  if (profile?.role === 'owner') {
+    navItems.push({
+      name: 'Workspace Settings',
+      href: '/settings',
+      icon: Settings,
+    });
+  }
 
   return (
     <nav className="bg-white border-b border-slate-200">

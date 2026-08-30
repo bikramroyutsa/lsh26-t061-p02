@@ -15,4 +15,5 @@ export interface Medicine {
 
   returned?: boolean;
   returnedDate?: string; // YYYY-MM-DD
+  pharmacy_id?: string;
 }
