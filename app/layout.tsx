@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { PharmacyProvider } from "@/context/PharmacyContext";
+import { AuthProvider } from "@/context/AuthContext";
+import AppAuthWrapper from "@/components/layout/AppAuthWrapper";
 import Header from "@/components/layout/Header";
 import Navigation from "@/components/layout/Navigation";
 
@@ -31,13 +33,17 @@ export default function RootLayout({
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-800 font-sans">
-        <PharmacyProvider>
-          <Header />
-          <Navigation />
-          <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-            {children}
-          </main>
-        </PharmacyProvider>
+        <AuthProvider>
+          <AppAuthWrapper>
+            <PharmacyProvider>
+              <Header />
+              <Navigation />
+              <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+                {children}
+              </main>
+            </PharmacyProvider>
+          </AppAuthWrapper>
+        </AuthProvider>
       </body>
     </html>
   );

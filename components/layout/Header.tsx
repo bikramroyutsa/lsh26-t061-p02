@@ -2,14 +2,17 @@
 
 import React, { useEffect, useState } from 'react';
 import { usePharmacy } from '@/context/PharmacyContext';
-import { Calendar, RotateCcw, Activity } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+import { Calendar, RotateCcw, Activity, LogOut } from 'lucide-react';
 import ConfirmationModal from '@/components/ui/ConfirmationModal';
 
 export default function Header() {
   const { resetData } = usePharmacy();
+  const { signOut, user } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [dateStr, setDateStr] = useState('');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isSignOutOpen, setIsSignOutOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -41,7 +44,14 @@ export default function Header() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 sm:gap-4 self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-4 self-start md:self-auto">
+            {/* User display */}
+            {user && (
+              <span className="text-xs text-slate-400 font-medium truncate max-w-[150px] sm:max-w-none">
+                Logged in: <strong className="text-slate-600 font-semibold">{user.email}</strong>
+              </span>
+            )}
+
             <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-lg text-sm text-slate-600 font-medium">
               <Calendar className="h-4 w-4 text-slate-400" />
               <span>Today: {mounted ? dateStr : '...'}</span>
@@ -55,10 +65,20 @@ export default function Header() {
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Reset Sample Data</span>
             </button>
+
+            <button
+              onClick={() => setIsSignOutOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-semibold text-rose-600 bg-white hover:bg-rose-50 border border-rose-200 rounded-lg transition-colors cursor-pointer"
+              title="Sign out of Pharmacy Portal"
+            >
+              <LogOut className="h-3.5 w-3.5" />
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
       </div>
 
+      {/* Confirmation for database reset */}
       <ConfirmationModal
         isOpen={isConfirmOpen}
         title="Reset Stock Data"
@@ -70,6 +90,20 @@ export default function Header() {
           setIsConfirmOpen(false);
         }}
         onCancel={() => setIsConfirmOpen(false)}
+      />
+
+      {/* Confirmation for Sign Out */}
+      <ConfirmationModal
+        isOpen={isSignOutOpen}
+        title="Confirm Sign Out"
+        message="Are you sure you want to log out of the Pharmacy Expiry Shelf Check dashboard?"
+        confirmLabel="Sign Out"
+        variant="info"
+        onConfirm={() => {
+          signOut();
+          setIsSignOutOpen(false);
+        }}
+        onCancel={() => setIsSignOutOpen(false)}
       />
     </header>
   );
